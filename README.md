@@ -10,6 +10,9 @@ jsondiffpatch
 
 Diff & patch JavaScript objects
 
+This is a fork of benjamine implementation.
+Optimized algorithms and rewritten to ts.
+
 -----
 **[Live Demo](http://benjamine.github.io/jsondiffpatch/demo/index.html)**
 -----
