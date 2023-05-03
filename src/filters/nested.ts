@@ -63,78 +63,55 @@ export function objectsDiffFilter(context: DiffContext) {
 objectsDiffFilter.filterName = "objects";
 
 export const patchFilter = function nestedPatchFilter(context: PatchContext) {
-    if (!context.nested) {
+    if (!context.nested || context.isArrayDelta()) {
         return;
     }
-    if (context.isArrayDelta()) {
-        return;
-    }
-    let name;
-    for (name in context.delta) {
-        const child = new PatchContext(context.left[name], context.delta[name]);
+    Object.keys(context.delta as object).forEach((name: string)=>{
+        const child = new PatchContext((context.left as any)[name], (context.delta as any)[name]);
         context.push(child, name);
-    }
+    });
     context.exit();
 };
 patchFilter.filterName = "objects";
 
 export const collectChildrenPatchFilter = function collectChildrenPatchFilter(context: PatchContext) {
-    if (!context || !context.children) {
+    if (!context || !context.children || context.isArrayDelta()) {
         return;
     }
-    if (context.isArrayDelta()) {
-        return;
-    }
-    const length = context.children.length;
-    let child;
-    for (let index = 0; index < length; index++) {
-        child = context.children[index];
-        if (
-            Object.prototype.hasOwnProperty.call(context.left, child.childName) &&
-      child.result === undefined
-        ) {
-            delete context.left[child.childName];
-        } else if (context.left[child.childName] !== child.result) {
-            context.left[child.childName] = child.result;
+    const left = context.left as any;
+    context.children.forEach((child: any) => {
+        if (child.childName in (context.left as any) && child.result === undefined) {
+            delete left[child.childName];
+        } else if (left[child.childName] !== child.result) {
+            left[child.childName] = child.result;
         }
-    }
+    });
     context.setResult(context.left).exit();
 };
 collectChildrenPatchFilter.filterName = "collectChildren";
 
-export const reverseFilter = function nestedReverseFilter(context) {
-    if (!context.nested) {
+export const reverseFilter = function nestedReverseFilter(context: ReverseContext) {
+    if (!context.nested || context.isArrayDelta()) {
         return;
     }
-    if (context.delta._t) {
-        return;
-    }
-    let name;
-    let child;
-    for (name in context.delta) {
-        child = new ReverseContext(context.delta[name]);
+    Object.keys(context.delta as object).forEach((name: string) => {
+        const child = new ReverseContext((context.delta as any)[name]);
         context.push(child, name);
-    }
+    });
     context.exit();
 };
 reverseFilter.filterName = "objects";
 
 export function collectChildrenReverseFilter(context: ReverseContext) {
-    if (!context || !context.children) {
+    if (!context || !context.children || context.isArrayDelta()) {
         return;
     }
-    if (context.isArrayDelta()) {
-        return;
-    }
-    const length = context.children.length;
-    let child;
-    const delta = {};
-    for (let index = 0; index < length; index++) {
-        child = context.children[index];
+    const delta: any = {};
+    context.children.forEach((child: any) => {
         if (delta[child.childName] !== child.result) {
             delta[child.childName] = child.result;
         }
-    }
+    });
     context.setResult(delta).exit();
 }
 collectChildrenReverseFilter.filterName = "collectChildren";

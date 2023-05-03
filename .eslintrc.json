@@ -24,5 +24,8 @@
         "semi": ["error", "always"],
         "quote-props": ["error", "consistent-as-needed"],
         "object-curly-spacing": ["error", "never"]
+    },
+    "globals": {
+        "diff_match_patch": "readonly"
     }
 }

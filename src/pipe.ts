@@ -2,13 +2,13 @@ import Context from "./contexts/context";
 
 type tFilter = ((context: Context) => void) & {filterName: string};
 
-class PipeError extends Error {noResult: boolean = false};
+class PipeError extends Error {noResult = false;}
 
 class Pipe {
     name: string;
     filters: tFilter[];
     processor: any;
-    debug: boolean = false;
+    debug = false;
     resultCheck: null | ((context: Context) => void) = null;
 
     constructor(name: string) {
@@ -18,18 +18,18 @@ class Pipe {
 
     process(input: any) {
         if (!this.processor) {
-            throw new Error('add this pipe to a processor before using it');
+            throw new Error("add this pipe to a processor before using it");
         }
-        let debug = this.debug;
-        let length = this.filters.length;
-        let context = input;
+        const debug = this.debug;
+        const length = this.filters.length;
+        const context = input;
         for (let index = 0; index < length; index++) {
-            let filter = this.filters[index];
+            const filter = this.filters[index];
             if (debug) {
                 this.log(`filter: ${filter.filterName}`);
             }
             filter(context);
-            if (typeof context === 'object' && context.exiting) {
+            if (typeof context === "object" && context.exiting) {
                 context.exiting = false;
                 break;
             }
@@ -55,10 +55,10 @@ class Pipe {
 
     indexOf(filterName: string) {
         if (!filterName) {
-            throw new Error('a filter name is required');
+            throw new Error("a filter name is required");
         }
         for (let index = 0; index < this.filters.length; index++) {
-            let filter = this.filters[index];
+            const filter = this.filters[index];
             if (filter.filterName === filterName) {
                 return index;
             }
@@ -70,38 +70,35 @@ class Pipe {
         return this.filters.map(f => f.filterName);
     }
 
-    after(filterName: string) {
-        let index = this.indexOf(filterName);
-        let params: tFilter[] = Array.prototype.slice.call(arguments, 1);
+    after(filterName: string, ...params: tFilter[]) {
+        const index = this.indexOf(filterName);
         if (!params.length) {
-            throw new Error('a filter is required');
+            throw new Error("a filter is required");
         }
         this.filters.splice(index + 1, 0, ...params);
         return this;
     }
 
-    before(filterName: string) {
-        let index = this.indexOf(filterName);
-        let params: tFilter[] = Array.prototype.slice.call(arguments, 1);
+    before(filterName: string, ...params: tFilter[]) {
+        const index = this.indexOf(filterName);
         if (!params.length) {
-            throw new Error('a filter is required');
+            throw new Error("a filter is required");
         }
         this.filters.splice(index, 0, ...params);
         return this;
     }
 
-    replace(filterName: string) {
-        let index = this.indexOf(filterName);
-        let params: tFilter[] = Array.prototype.slice.call(arguments, 1);
+    replace(filterName: string, ...params: tFilter[]) {
+        const index = this.indexOf(filterName);
         if (!params.length) {
-            throw new Error('a filter is required');
+            throw new Error("a filter is required");
         }
         this.filters.splice(index, 1, ...params);
         return this;
     }
 
     remove(filterName: string) {
-        let index = this.indexOf(filterName);
+        const index = this.indexOf(filterName);
         this.filters.splice(index, 1);
         return this;
     }
@@ -119,11 +116,10 @@ class Pipe {
         if (this.resultCheck) {
             return;
         }
-        let pipe = this;
         this.resultCheck = context => {
             if (!context.hasResult) {
                 console.log(context);
-                let error = new PipeError(`${pipe.name} failed`);
+                const error = new PipeError(`${this.name} failed`);
                 error.noResult = true;
                 throw error;
             }

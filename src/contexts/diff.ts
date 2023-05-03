@@ -1,12 +1,10 @@
 import Context from "./context";
-import defaultClone from "../clone";
-import {tAnyType, tContextResult} from "./result";
+import {clone} from "../clone";
 import {isArray} from "../utils/array";
 
 class DiffContext extends Context {
     left: any;
     right: any;
-    pipe: string;
     objectHash: any;
     matchByPosition: any;
     hashCache1?: any;
@@ -35,7 +33,7 @@ class DiffContext extends Context {
     getClone(){
         return typeof this.options.cloneDiffValues === "function"
             ? this.options.cloneDiffValues
-            : defaultClone;
+            : clone;
     }
 
     public get leftType() {

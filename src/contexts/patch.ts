@@ -7,7 +7,7 @@ export class ContextWithDelta extends Context {
     delta: tDelta;
 
     isArrayDelta(){
-        if (typeof this.delta === "object" && "_t" in this.delta)
+        if (typeof this.delta === "object" && this.delta && "_t" in this.delta)
             return (this.delta._t === "a");
         return false;
     }

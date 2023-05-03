@@ -4,17 +4,18 @@ import {tAnyType, tContextResult} from "./result";
 export default class Context {
     protected _cache: {[key: string]: any} = {};
     result: any;
+    pipe: Pipe | string | undefined;
     hasResult = true;
     exiting = false;
     nextPipe: string | Pipe | undefined;
-    next: any;
     root: Context | undefined;
-    options: any;
     parent: Context | undefined;
-    children: any;
     childName: string | number | undefined;
-    nextAfterChildren: any;
     newName: string | undefined;
+    next: any;
+    options: any;
+    children: any;
+    nextAfterChildren: any;
 
     setResult(result: any): Context {
         this.result = result;

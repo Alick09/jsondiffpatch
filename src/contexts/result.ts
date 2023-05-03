@@ -1,4 +1,4 @@
-type tSimpleType = number | boolean | string | Date | RegExp;
+type tSimpleType = number | boolean | string | Date | RegExp | null;
 export interface iSimpleObject {
     [key: string]: tAnyType;
 }
