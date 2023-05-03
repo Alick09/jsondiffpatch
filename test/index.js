@@ -1,8 +1,4 @@
-/*
- * mocha's bdd syntax is inspired in RSpec
- *   please read: http://betterspecs.org/
- */
-import * as jsondiffpatch from "../build/jsondiffpatch.esm";
+import * as jsondiffpatch from "../dist/jsondiffpatch.esm";
 import examples from "./examples/diffpatch";
 import chai from "chai";
 

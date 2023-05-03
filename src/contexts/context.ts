@@ -1,5 +1,4 @@
 import Pipe from "../pipe";
-import {tAnyType, tContextResult} from "./result";
 
 export default class Context {
     protected _cache: {[key: string]: any} = {};
@@ -14,7 +13,7 @@ export default class Context {
     newName: string | undefined;
     next: any;
     options: any;
-    children: any;
+    children: Context[] | undefined;
     nextAfterChildren: any;
 
     setResult(result: any): Context {

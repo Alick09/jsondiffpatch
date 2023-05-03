@@ -15,7 +15,7 @@ export function collectChildrenDiffFilter(context: DiffContext) {
             continue;
         }
         result = result || {};
-        result[child.childName] = child.result;
+        result[child.childName as any] = child.result;
     }
     if (result && context.leftIsArray) {
         (result as tResultDescription)._t = "a";

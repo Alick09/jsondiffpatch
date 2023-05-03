@@ -43,8 +43,8 @@ class Pipe {
         console.log(`[jsondiffpatch] ${this.name} pipe, ${msg}`);
     }
 
-    append(...args: tFilter[]) {
-        this.filters.push(...args);
+    append(...args: any[]) {
+        this.filters.push(...args as tFilter[]);
         return this;
     }
 
@@ -108,22 +108,20 @@ class Pipe {
         return this;
     }
 
-    shouldHaveResult(should: boolean) {
+    shouldHaveResult(should = true) {
         if (should === false) {
             this.resultCheck = null;
-            return;
         }
-        if (this.resultCheck) {
-            return;
+        else if (!this.resultCheck) {
+            this.resultCheck = context => {
+                if (!context.hasResult) {
+                    console.log(context);
+                    const error = new PipeError(`${this.name} failed`);
+                    error.noResult = true;
+                    throw error;
+                }
+            };
         }
-        this.resultCheck = context => {
-            if (!context.hasResult) {
-                console.log(context);
-                const error = new PipeError(`${this.name} failed`);
-                error.noResult = true;
-                throw error;
-            }
-        };
         return this;
     }
 }

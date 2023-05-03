@@ -2,7 +2,7 @@ import Context from "./contexts/context";
 import Pipe from "./pipe";
 
 
-interface iProcessorOptions {
+export interface iProcessorOptions {
     objectHash?: (obj: object) => string | number;
     arrays?: {
         // default true, detect items moved inside the array (otherwise they will be registered as remove+add)

@@ -1,4 +1,4 @@
-import Processor from "./processor";
+import Processor, {iProcessorOptions} from "./processor";
 import Pipe from "./pipe";
 import DiffContext from "./contexts/diff";
 import PatchContext from "./contexts/patch";
@@ -10,9 +10,12 @@ import * as nested from "./filters/nested";
 import * as arrays from "./filters/arrays";
 import * as dates from "./filters/dates";
 import * as texts from "./filters/texts";
+import {tDelta} from "./contexts/result";
 
-class DiffPatcher {
-    constructor(options) {
+export class DiffPatcher {
+    processor: Processor;
+
+    constructor(options: iProcessorOptions = {}) {
         this.processor = new Processor(options);
         this.processor.pipe(
             new Pipe("diff")
@@ -52,29 +55,27 @@ class DiffPatcher {
         );
     }
 
-    options(...args) {
-        return this.processor.options(...args);
+    options(opts: iProcessorOptions) {
+        return this.processor.options(opts);
     }
 
-    diff(left, right) {
+    diff(left: any, right: any) {
         return this.processor.process(new DiffContext(left, right));
     }
 
-    patch(left, delta) {
+    patch(left: any, delta: tDelta) {
         return this.processor.process(new PatchContext(left, delta));
     }
 
-    reverse(delta) {
+    reverse(delta: tDelta) {
         return this.processor.process(new ReverseContext(delta));
     }
 
-    unpatch(right, delta) {
+    unpatch(right: any, delta: tDelta) {
         return this.patch(right, this.reverse(delta));
     }
 
-    clone(value) {
+    clone(value: any) {
         return clone(value);
     }
 }
-
-export default DiffPatcher;
