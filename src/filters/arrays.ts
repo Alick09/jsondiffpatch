@@ -288,35 +288,33 @@ export const patchFilter = function nestedPatchFilter(context: PatchContext) {
     let toRemove: number[] = [];
     let toInsert: {index: number, value: any}[] = [];
     const toModify: {index: number, delta: any}[] = [];
-    for (index in delta) {
-        if (index !== "_t") {
-            if (index[0] === "_") {
-                // removed item from original array
-                if (delta[index][2] === 0 || delta[index][2] === ARRAY_MOVE) {
-                    toRemove.push(parseInt(index.slice(1), 10));
-                } else {
-                    throw new Error(
-                        "only removal or move can be applied at original array indices," +
-                        ` invalid diff type: ${delta[index][2]}`
-                    );
-                }
+    context.forDeltaItems((index: string, val: tResult) => {
+        if (index[0] === "_") {
+            // removed item from original array
+            if (val[2] === 0 || val[2] === ARRAY_MOVE) {
+                toRemove.push(parseInt(index.slice(1), 10));
             } else {
-                if (delta[index].length === 1) {
-                    // added item at new array
-                    toInsert.push({
-                        index: parseInt(index, 10),
-                        value: delta[index][0],
-                    });
-                } else {
-                    // modified item at new array
-                    toModify.push({
-                        index: parseInt(index, 10),
-                        delta: delta[index],
-                    });
-                }
+                throw new Error(
+                    "only removal or move can be applied at original array indices," +
+                    ` invalid diff type: ${val[2]}`
+                );
+            }
+        } else {
+            if (val.length === 1) {
+                // added item at new array
+                toInsert.push({
+                    index: parseInt(index, 10),
+                    value: val[0],
+                });
+            } else {
+                // modified item at new array
+                toModify.push({
+                    index: parseInt(index, 10),
+                    delta: val,
+                });
             }
         }
-    }
+    });
 
     // remove items, in reverse order to avoid sawing our own floor
     toRemove = toRemove.sort(compare.numerically);
@@ -407,13 +405,13 @@ const reverseArrayDeltaIndex = (context: ReverseContext, index: string | number,
     }
 
     let reverseIndex = +index;
-    context.forDeltaItems((name: string, deltaItem: any) => {
+    const res = context.forDeltaItems((name: string, deltaItem: tDelta, i, stop) => {
         if (isArray(deltaItem)) {
             if (deltaItem[2] === ARRAY_MOVE) {
-                const moveFromIndex = parseInt(name.substr(1), 10);
-                const moveToIndex = deltaItem[1];
+                const moveFromIndex = parseInt(name.substring(1), 10);
+                const moveToIndex = deltaItem[1] as number;
                 if (moveToIndex === +index) {
-                    return moveFromIndex;
+                    return stop(moveFromIndex);
                 }
                 if (moveFromIndex <= reverseIndex && moveToIndex > reverseIndex) {
                     reverseIndex++;
@@ -433,7 +431,7 @@ const reverseArrayDeltaIndex = (context: ReverseContext, index: string | number,
             }
         }
     });
-    return reverseIndex;
+    return res === undefined ? reverseIndex : res;
 };
 
 export const collectChildrenReverseFilter = (context: ReverseContext) => {

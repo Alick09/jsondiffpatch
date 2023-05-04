@@ -2,7 +2,6 @@ import DiffContext from "../contexts/diff";
 import PatchContext from "../contexts/patch";
 import {tDelta, tResultDescription} from "../contexts/result";
 import ReverseContext from "../contexts/reverse";
-import { isArray } from "../utils/array";
 
 export function collectChildrenDiffFilter(context: DiffContext) {
     if (!context || !context.children) {

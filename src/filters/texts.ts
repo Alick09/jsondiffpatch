@@ -1,4 +1,3 @@
-/* global diff_match_patch */
 import {DiffMatchPatch, Diff, PatchOperation} from "diff-match-patch-ts";
 import DiffContext from "../contexts/diff";
 import {TEXT_DIFF} from "../utils/constants";
@@ -66,15 +65,7 @@ const textDeltaReverse = function(delta: string): string {
         result.length2 = patch.length1;
         return result;
     });
-    // console.log(Object.keys(patches[0]).reduce((acc, k: string)=>{
-    //     if (k == "diffs")
-    //         acc[k] = [patches[0], reversedPatches[0]].map((c) => c[k].map((v)=>`${v[0]}*${v[1]}`).join("; "));
-    //     else
-    //         acc[k] = [patches[0], reversedPatches[0]].map((c) => (c as any)[k]);
-    //     return acc;
-    // }, {} as any));
     const res = diffMatchPatch.patch_toText(reversedPatches);
-    // console.log("=======", delta, "---------", res, "^^^^^^^^");
     return res;
 };
 

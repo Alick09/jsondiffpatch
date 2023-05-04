@@ -1,4 +1,5 @@
 import Context from "./contexts/context";
+import Processor from "./processor";
 
 type tFilter = ((context: Context) => void) & {filterName: string};
 
@@ -7,7 +8,7 @@ class PipeError extends Error {noResult = false;}
 class Pipe {
     name: string;
     filters: tFilter[];
-    processor: any;
+    processor: Processor | undefined;
     debug = false;
     resultCheck: null | ((context: Context) => void) = null;
 

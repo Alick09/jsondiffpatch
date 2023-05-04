@@ -16,10 +16,13 @@ export class ContextWithDelta extends Context {
     public get arrayMove(): boolean {
         return isArray(this.delta) && this.delta[2] == ARRAY_MOVE;
     }
-    forDeltaItems(func: (key: string, val: any, index: number) => void, keep_t = false){
+    forDeltaItems(func: (key: string, val: any, index: number, stop: (v: any)=>void) => void, keep_t = false){
         const d_ = this.delta as Record<string, any>;
         const keys = keep_t ? Object.keys(d_) : Object.keys(d_).filter(k => k !== "_t");
-        return keys.map((k: string, i: number) => func(k, d_[k], i));
+        const status = {stopRequested: false, retVal: undefined};
+        const stop = (v: any) => {status.stopRequested = true; status.retVal = v;};
+        keys.some((k: string, i: number) => {func(k, d_[k], i, stop); return status.stopRequested;});
+        return status.retVal;
     }
     deltaItem(index: number){
         return (this.delta as any[])[index];

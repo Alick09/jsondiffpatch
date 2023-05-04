@@ -88,7 +88,6 @@ describe("DiffPatcher", () => {
                     }
                     it("can diff", function() {
                         const delta = this.instance.diff(example.left, example.right);
-                        // console.log(delta, example.delta);
                         expect(delta).to.deep.equal(example.delta);
                     });
                     it("can diff backwards", function() {
@@ -104,7 +103,6 @@ describe("DiffPatcher", () => {
                             expect(right).to.deep.equal(example.right);
                         });
                         it("can reverse delta", function() {
-                            //console.log(example.delta);
                             let reverse = this.instance.reverse(example.delta);
                             if (example.exactReverse !== false) {
                                 expect(reverse).to.deep.equal(example.reverse);
