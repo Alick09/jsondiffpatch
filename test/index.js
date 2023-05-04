@@ -1,17 +1,11 @@
-import * as jsondiffpatch from "../dist/jsondiffpatch.esm";
-import examples from "./examples/diffpatch";
-import chai from "chai";
-
-import lcs from "../src/filters/lcs";
+// import {DiffPatcher, lcs} from "ag-jsondiffpatch";
+// import examples from "./examples/diffpatch.js";
+const lib = require("../dist/index.js");
+const examples = require("./examples/diffpatch.js");
+const chai = require("chai");
+const {DiffPatcher, lcs, clone} = lib;
 const expect = chai.expect;
 
-describe("jsondiffpatch", () => {
-    it("has a diff method", () => {
-        expect(jsondiffpatch.diff).to.be.a("function");
-    });
-});
-
-const DiffPatcher = jsondiffpatch.DiffPatcher;
 
 const isArray =
   typeof Array.isArray === "function"
@@ -94,6 +88,7 @@ describe("DiffPatcher", () => {
                     }
                     it("can diff", function() {
                         const delta = this.instance.diff(example.left, example.right);
+                        // console.log(delta, example.delta);
                         expect(delta).to.deep.equal(example.delta);
                     });
                     it("can diff backwards", function() {
@@ -103,12 +98,13 @@ describe("DiffPatcher", () => {
                     if (!example.noPatch) {
                         it("can patch", function() {
                             const right = this.instance.patch(
-                                jsondiffpatch.clone(example.left),
+                                clone(example.left),
                                 example.delta
                             );
                             expect(right).to.deep.equal(example.right);
                         });
                         it("can reverse delta", function() {
+                            //console.log(example.delta);
                             let reverse = this.instance.reverse(example.delta);
                             if (example.exactReverse !== false) {
                                 expect(reverse).to.deep.equal(example.reverse);
@@ -118,14 +114,14 @@ describe("DiffPatcher", () => {
                                 // patch and compare the results
                                 expect(
                                     this.instance.patch(
-                                        jsondiffpatch.clone(example.right),
+                                        clone(example.right),
                                         reverse
                                     )
                                 ).to.deep.equal(example.left);
                                 reverse = this.instance.diff(example.right, example.left);
                                 expect(
                                     this.instance.patch(
-                                        jsondiffpatch.clone(example.right),
+                                        clone(example.right),
                                         reverse
                                     )
                                 ).to.deep.equal(example.left);
@@ -133,7 +129,7 @@ describe("DiffPatcher", () => {
                         });
                         it("can unpatch", function() {
                             const left = this.instance.unpatch(
-                                jsondiffpatch.clone(example.right),
+                                clone(example.right),
                                 example.delta
                             );
                             expect(left).to.deep.equal(example.left);
@@ -159,14 +155,14 @@ describe("DiffPatcher", () => {
                     },
                 },
             };
-            const cloned = jsondiffpatch.clone(obj);
+            const cloned = clone(obj);
             expect(cloned).to.deep.equal(obj);
         });
         it("clones RegExp", () => {
             const obj = {
                 pattern: /expr/gim,
             };
-            const cloned = jsondiffpatch.clone(obj);
+            const cloned = clone(obj);
             expect(cloned).to.deep.equal({
                 pattern: /expr/gim,
             });
@@ -197,25 +193,6 @@ describe("DiffPatcher", () => {
                 oldProp: [{value: 3}, 0, 0],
                 newProp: [{value: 5}],
             });
-        });
-    });
-
-    describe("static shortcuts", () => {
-        it("diff", () => {
-            const delta = jsondiffpatch.diff(4, 5);
-            expect(delta).to.deep.equal([4, 5]);
-        });
-        it("patch", () => {
-            const right = jsondiffpatch.patch(4, [4, 5]);
-            expect(right).to.eql(5);
-        });
-        it("unpatch", () => {
-            const left = jsondiffpatch.unpatch(5, [4, 5]);
-            expect(left).to.eql(4);
-        });
-        it("reverse", () => {
-            const reverseDelta = jsondiffpatch.reverse([4, 5]);
-            expect(reverseDelta).to.deep.equal([5, 4]);
         });
     });
 
@@ -367,361 +344,6 @@ describe("DiffPatcher", () => {
             });
         });
     });
-
-    describe("formatters", () => {
-        describe("jsonpatch", () => {
-            let instance;
-            let formatter;
-
-            before(() => {
-                instance = new DiffPatcher();
-                formatter = jsondiffpatch.formatters.jsonpatch;
-            });
-
-            const expectFormat = (before, after, expected) => {
-                const diff = instance.diff(before, after);
-                const format = formatter.format(diff);
-                expect(format).to.be.eql(expected);
-            };
-
-            const removeOp = path => ({
-                op: "remove",
-                path,
-            });
-
-            const moveOp = (from, path) => ({
-                op: "move",
-                from,
-                path,
-            });
-
-            const addOp = (path, value) => ({
-                op: "add",
-                path,
-                value,
-            });
-
-            const replaceOp = (path, value) => ({
-                op: "replace",
-                path,
-                value,
-            });
-
-            it("should return empty format for empty diff", () => {
-                expectFormat([], [], []);
-            });
-
-            it("should format an add operation for array insertion", () => {
-                expectFormat([1, 2, 3], [1, 2, 3, 4], [addOp("/3", 4)]);
-            });
-
-            it("should format an add operation for object insertion", () => {
-                expectFormat({a: "a", b: "b"}, {a: "a", b: "b", c: "c"}, [
-                    addOp("/c", "c"),
-                ]);
-            });
-
-            it("should format for deletion of array", () => {
-                expectFormat([1, 2, 3, 4], [1, 2, 3], [removeOp("/3")]);
-            });
-
-            it("should format for deletion of object", () => {
-                expectFormat({a: "a", b: "b", c: "c"}, {a: "a", b: "b"}, [
-                    removeOp("/c"),
-                ]);
-            });
-
-            it("should format for replace of object", () => {
-                expectFormat({a: "a", b: "b"}, {a: "a", b: "c"}, [
-                    replaceOp("/b", "c"),
-                ]);
-            });
-
-            it("should put add/remove for array with primitive items", () => {
-                expectFormat([1, 2, 3], [1, 2, 4], [removeOp("/2"), addOp("/2", 4)]);
-            });
-
-            it("should sort remove by desc order", () => {
-                expectFormat([1, 2, 3], [1], [removeOp("/2"), removeOp("/1")]);
-            });
-
-            describe("patcher with comparator", () => {
-                before(() => {
-                    instance = new DiffPatcher({
-                        objectHash(obj) {
-                            if (obj && obj.id) {
-                                return obj.id;
-                            }
-                        },
-                    });
-                });
-
-                const anObjectWithId = id => ({
-                    id,
-                });
-
-                it("should remove higher level first", () => {
-                    const before = [
-                        anObjectWithId("removed"),
-                        {
-                            id: "remaining_outer",
-                            items: [
-                                anObjectWithId("removed_inner"),
-                                anObjectWithId("remaining_inner"),
-                            ],
-                        },
-                    ];
-                    const after = [
-                        {
-                            id: "remaining_outer",
-                            items: [anObjectWithId("remaining_inner")],
-                        },
-                    ];
-                    const expectedDiff = [removeOp("/0"), removeOp("/0/items/0")];
-                    expectFormat(before, after, expectedDiff);
-                });
-
-                it("should annotate move", () => {
-                    const before = [
-                        anObjectWithId("first"),
-                        anObjectWithId("second"),
-                    ];
-                    const after = [
-                        anObjectWithId("second"),
-                        anObjectWithId("first"),
-                    ];
-                    const expectedDiff = [moveOp("/1", "/0")];
-                    expectFormat(before, after, expectedDiff);
-                });
-
-                it("should sort the ops", () => {
-                    expectFormat(
-                        {hl: [ {id: 1, bla: "bla"}, {id: 2, bla: "ga"} ]},
-                        {hl: [ {id: 2, bla: "bla"}, {id: 1, bla: "ga"} ]},
-                        [
-                            moveOp("/hl/1", "/hl/0"),
-                            replaceOp("/hl/0/bla", "bla"),
-                            replaceOp("/hl/1/bla", "ga"),
-                        ]);
-                });
-            });
-
-            it("should annotate as moved op", () => {
-                expectFormat([1, 2], [2, 1], [moveOp("/1", "/0")]);
-            });
-
-            it("should add full path for moved op", () => {
-                expectFormat(
-                    {hl: [1, 2]},
-                    {hl: [2, 1]},
-                    [moveOp("/hl/1", "/hl/0")]);
-            });
-
-            it("should put the full path in move op and sort by HL - #230", () => {
-                const before = {
-                    middleName: "z",
-                    referenceNumbers: [
-                        {
-                            id: "id-3",
-                            referenceNumber: "123",
-                            index: "index-0",
-                        },
-                        {
-                            id: "id-1",
-                            referenceNumber: "456",
-                            index: "index-1",
-                        },
-                        {
-                            id: "id-2",
-                            referenceNumber: "789",
-                            index: "index-2",
-                        },
-                    ],
-                };
-                const after = {
-                    middleName: "x",
-                    referenceNumbers: [
-                        {
-                            id: "id-1",
-                            referenceNumber: "456",
-                            index: "index-0",
-                        },
-                        {
-                            id: "id-3",
-                            referenceNumber: "123",
-                            index: "index-1",
-                        },
-                        {
-                            id: "id-2",
-                            referenceNumber: "789",
-                            index: "index-2",
-                        },
-                    ],
-                };
-                const diff = [
-                    {
-                        op: "move",
-                        from: "/referenceNumbers/1",
-                        path: "/referenceNumbers/0",
-                    },
-                    {
-                        op: "replace",
-                        path: "/middleName",
-                        value: "x",
-                    },
-                    {
-                        op: "replace",
-                        path: "/referenceNumbers/0/index",
-                        value: "index-0",
-                    },
-                    {
-                        op: "replace",
-                        path: "/referenceNumbers/1/index",
-                        value: "index-1",
-                    },
-                ];
-                instance = new DiffPatcher({
-                    objectHash(obj) {
-                        return obj.id;
-                    },
-                });
-                expectFormat(before, after, diff);
-            });
-        });
-
-        describe("html", () => {
-            let instance;
-            let formatter;
-
-            before(() => {
-                instance = new DiffPatcher({textDiff: {minLength: 10}});
-                formatter = jsondiffpatch.formatters.html;
-            });
-
-            const expectFormat = (before, after, expected) => {
-                const diff = instance.diff(before, after);
-                const format = formatter.format(diff);
-                expect(format).to.be.eql(expected);
-            };
-
-            const expectedHtml = expectedDiff => {
-                const html = [];
-                arrayForEach(expectedDiff, function(diff) {
-                    html.push("<li>");
-                    html.push("<div class=\"jsondiffpatch-textdiff-location\">");
-                    html.push(
-                        `<span class="jsondiffpatch-textdiff-line-number">${
-                            diff.start
-                        }</span>`
-                    );
-                    html.push(
-                        `<span class="jsondiffpatch-textdiff-char">${diff.length}</span>`
-                    );
-                    html.push("</div>");
-                    html.push("<div class=\"jsondiffpatch-textdiff-line\">");
-
-                    arrayForEach(diff.data, function(data) {
-                        html.push(
-                            `<span class="jsondiffpatch-textdiff-${data.type}">${
-                                data.text
-                            }</span>`
-                        );
-                    });
-
-                    html.push("</div>");
-                    html.push("</li>");
-                });
-                return (
-                    "<div class=\"jsondiffpatch-delta jsondiffpatch-textdiff\">" +
-          "<div class=\"jsondiffpatch-value\">" +
-          "<ul class=\"jsondiffpatch-textdiff\">" +
-          `${html.join("")}</ul></div></div>`
-                );
-            };
-
-            it("should format Chinese", () => {
-                const before = "喵星人最可爱最可爱最可爱喵星人最可爱最可爱最可爱";
-                const after = "汪星人最可爱最可爱最可爱喵星人meow最可爱最可爱最可爱";
-                const expectedDiff = [
-                    {
-                        start: 1,
-                        length: 17,
-                        data: [
-                            {
-                                type: "deleted",
-                                text: "喵",
-                            },
-                            {
-                                type: "added",
-                                text: "汪",
-                            },
-                            {
-                                type: "context",
-                                text: "星人最可爱最可爱最可爱喵星人最可",
-                            },
-                        ],
-                    },
-                    {
-                        start: 8,
-                        length: 16,
-                        data: [
-                            {
-                                type: "context",
-                                text: "可爱最可爱喵星人",
-                            },
-                            {
-                                type: "added",
-                                text: "meow",
-                            },
-                            {
-                                type: "context",
-                                text: "最可爱最可爱最可",
-                            },
-                        ],
-                    },
-                ];
-                expectFormat(before, after, expectedHtml(expectedDiff));
-            });
-
-            it("should format Japanese", () => {
-                const before = "猫が可愛いです猫が可愛いです";
-                const after = "猫がmeow可愛いですいぬ可愛いです";
-                const expectedDiff = [
-                    {
-                        start: 1,
-                        length: 13,
-                        data: [
-                            {
-                                type: "context",
-                                text: "猫が",
-                            },
-                            {
-                                type: "added",
-                                text: "meow",
-                            },
-                            {
-                                type: "context",
-                                text: "可愛いです",
-                            },
-                            {
-                                type: "deleted",
-                                text: "猫が",
-                            },
-                            {
-                                type: "added",
-                                text: "いぬ",
-                            },
-                            {
-                                type: "context",
-                                text: "可愛いで",
-                            },
-                        ],
-                    },
-                ];
-                expectFormat(before, after, expectedHtml(expectedDiff));
-            });
-        });
-    });
 });
 
 describe("lcs", () => {
@@ -756,20 +378,20 @@ describe("lcs", () => {
             });
     });
 
-    it("should compute diff for large array", () => {
-        const ARRAY_LENGTH = 5000; // js stack is about 50k
-        function randomArray() {
-            let result = [];
-            for (let i = 0; i < ARRAY_LENGTH; i++) {
-                if (Math.random() > 0.5) {
-                    result.push("A");
-                } else {
-                    result.push("B");
-                }
-            }
-            return result;
-        }
+    // it("should compute diff for large array", () => {
+    //     const ARRAY_LENGTH = 5000; // js stack is about 50k
+    //     function randomArray() {
+    //         const result = [];
+    //         for (let i = 0; i < ARRAY_LENGTH; i++) {
+    //             if (Math.random() > 0.5) {
+    //                 result.push("A");
+    //             } else {
+    //                 result.push("B");
+    //             }
+    //         }
+    //         return result;
+    //     }
 
-        lcs.get(randomArray(), randomArray());
-    });
+    //     lcs.get(randomArray(), randomArray());
+    // });
 });

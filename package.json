@@ -3,12 +3,16 @@
     "version": "0.5.0",
     "author": "Benjamin Eidelman <beneidel@gmail.com>",
     "description": "Diff & Patch for Javascript objects (ag version)",
+    "main": "dist/index.js",
+    "types": "./dist/index.d.ts",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/benjamine/jsondiffpatch.git"
+    },
     "contributors": [
         "Benjamin Eidelman <beneidel@gmail.com>",
         "Abdulla Gaibullaev"
     ],
-    "main": "dist/index.js",
-    "types": "./dist/index.d.ts",
     "files": [
         "dist"
     ],
@@ -16,12 +20,7 @@
         "build": "webpack",
         "watch": "webpack --watch",
         "prepublishOnly": "npm run test && npm run build",
-        "test": "jest",
-        "testCoverage": "jest --coverage"
-    },
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/benjamine/jsondiffpatch.git"
+        "test": "mocha ./test/index.js"
     },
     "keywords": [
         "json",
@@ -29,24 +28,24 @@
         "patch"
     ],
     "dependencies": {
-        "diff-match-patch": "^1.0.5"
+        "diff-match-patch": "^1.0.5",
+        "diff-match-patch-ts": "^0.2.1-rc.0"
     },
     "devDependencies": {
         "@types/diff-match-patch": "^1.0.32",
         "@typescript-eslint/eslint-plugin": "^5.59.2",
         "@typescript-eslint/parser": "^5.59.2",
+        "chai": "^4.3.7",
         "eslint": "^8.36.0",
         "eslint-config-standard": "^17.0.0",
         "eslint-plugin-promise": "^6.1.1",
-        "eslint-plugin-react": "^7.32.2",
-        "eslint-plugin-react-hooks": "^4.6.0",
-        "ts-jest": "^29.1.0",
         "ts-loader": "^9.3.0",
+        "ts-mocha": "^10.0.0",
+        "ts-node": "^10.9.1",
         "typescript": "^4.6.4",
         "webpack": "^5.74.0",
         "webpack-cli": "^4.10.0"
     },
-    "bundleDependencies": [],
     "license": "MIT",
     "homepage": "https://github.com/Alick09/jsondiffpatch"
 }

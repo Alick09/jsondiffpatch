@@ -8,9 +8,7 @@ export class ContextWithDelta extends Context {
     delta: tDelta;
 
     isArrayDelta(){
-        if (typeof this.delta === "object" && this.delta && "_t" in this.delta)
-            return (this.delta._t === "a");
-        return false;
+        return (this.delta as any)._t === "a";
     }
     public get nested(){
         return !isArray(this.delta);
@@ -18,9 +16,10 @@ export class ContextWithDelta extends Context {
     public get arrayMove(): boolean {
         return isArray(this.delta) && this.delta[2] == ARRAY_MOVE;
     }
-    forDeltaItems(func: (key: string, val: any, index: number) => void){
+    forDeltaItems(func: (key: string, val: any, index: number) => void, keep_t = false){
         const d_ = this.delta as Record<string, any>;
-        return Object.keys(d_).map((k: string, i: number) => func(k, d_[k], i));
+        const keys = keep_t ? Object.keys(d_) : Object.keys(d_).filter(k => k !== "_t");
+        return keys.map((k: string, i: number) => func(k, d_[k], i));
     }
     deltaItem(index: number){
         return (this.delta as any[])[index];

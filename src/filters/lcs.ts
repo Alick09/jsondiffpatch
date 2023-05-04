@@ -24,10 +24,10 @@ const lengthMatrix = (array1: tAnyType[], array2: tAnyType[], match: any, contex
             if (match(array1, array2, x - 1, y - 1, context)) {
                 matrix[x][y] = {l: matrix[x - 1][y - 1].l + 1, dir: 1};
             } else {
-                if (matrix[x-1][y] > matrix[x][y-1])
-                    matrix[x][y] = {l: matrix[x-1][y], dir: 2};
+                if (matrix[x-1][y].l > matrix[x][y-1].l)
+                    matrix[x][y] = {l: matrix[x-1][y].l, dir: 2};
                 else
-                    matrix[x][y] = {l: matrix[x][y-1], dir: 3};
+                    matrix[x][y] = {l: matrix[x][y-1].l, dir: 3};
             }
         }
     }
@@ -42,6 +42,9 @@ const backtrack = function(matrix: tMatrix, array1: tAnyType[], array2: tAnyType
         indices1: [] as number[],
         indices2: [] as number[],
     };
+
+    // console.log(array1, array2);
+    // console.log(matrix);
 
     while (index1 !== 0 && index2 !== 0) {
         switch(matrix[index1][index2].dir){

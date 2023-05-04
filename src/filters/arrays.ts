@@ -2,14 +2,11 @@ import DiffContext from "../contexts/diff";
 import PatchContext from "../contexts/patch";
 import {tDelta, tResult, tResultDescription} from "../contexts/result";
 import ReverseContext from "../contexts/reverse";
-import {compare} from "../utils/array";
+import {compare, isArray} from "../utils/array";
 
 import * as lcs from "./lcs";
 
 const ARRAY_MOVE = 3;
-
-const isArray =
-    typeof Array.isArray === "function" ? Array.isArray : (a: any) => a instanceof Array;
 
 const arrayIndexOf =
     typeof Array.prototype.indexOf === "function"
@@ -404,7 +401,7 @@ reverseFilter.filterName = "arrays";
 
 const reverseArrayDeltaIndex = (context: ReverseContext, index: string | number, itemDelta: any) => {
     if (typeof index === "string" && index[0] === "_") {
-        return parseInt(index.substr(1), 10);
+        return parseInt(index.substring(1), 10);
     } else if (isArray(itemDelta) && itemDelta[2] === 0) {
         return `_${index}`;
     }
@@ -439,7 +436,7 @@ const reverseArrayDeltaIndex = (context: ReverseContext, index: string | number,
     return reverseIndex;
 };
 
-export function collectChildrenReverseFilter(context: ReverseContext) {
+export const collectChildrenReverseFilter = (context: ReverseContext) => {
     if (!context || !context.children || !context.isArrayDelta()) {
         return;
     }
@@ -461,5 +458,5 @@ export function collectChildrenReverseFilter(context: ReverseContext) {
         }
     });
     context.setResult(delta).exit();
-}
+};
 collectChildrenReverseFilter.filterName = "arraysCollectChildren";

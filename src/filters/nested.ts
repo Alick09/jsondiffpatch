@@ -1,7 +1,8 @@
 import DiffContext from "../contexts/diff";
 import PatchContext from "../contexts/patch";
-import {tResultDescription} from "../contexts/result";
+import {tDelta, tResultDescription} from "../contexts/result";
 import ReverseContext from "../contexts/reverse";
+import { isArray } from "../utils/array";
 
 export function collectChildrenDiffFilter(context: DiffContext) {
     if (!context || !context.children) {
@@ -94,9 +95,8 @@ export const reverseFilter = function nestedReverseFilter(context: ReverseContex
     if (!context.nested || context.isArrayDelta()) {
         return;
     }
-    Object.keys(context.delta as object).forEach((name: string) => {
-        const child = new ReverseContext((context.delta as any)[name]);
-        context.push(child, name);
+    context.forDeltaItems((name: string, val: tDelta) => {
+        context.push(new ReverseContext(val), name);
     });
     context.exit();
 };

@@ -115,7 +115,6 @@ class Pipe {
         else if (!this.resultCheck) {
             this.resultCheck = context => {
                 if (!context.hasResult) {
-                    console.log(context);
                     const error = new PipeError(`${this.name} failed`);
                     error.noResult = true;
                     throw error;

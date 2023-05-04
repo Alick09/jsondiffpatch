@@ -1,12 +1,12 @@
 /* global diff_match_patch */
-import {Diff, diff_match_patch as dmp} from "diff-match-patch";
+import {DiffMatchPatch, Diff, PatchOperation} from "diff-match-patch-ts";
 import DiffContext from "../contexts/diff";
 import {TEXT_DIFF} from "../utils/constants";
 import PatchContext from "../contexts/patch";
 import ReverseContext from "../contexts/reverse";
 
 const DEFAULT_MIN_LENGTH = 60;
-const diffMatchPatch = new dmp();
+const diffMatchPatch = new DiffMatchPatch();
 
 
 export const diffFilter = function textsDiffFilter(context: DiffContext) {
@@ -29,8 +29,11 @@ export const diffFilter = function textsDiffFilter(context: DiffContext) {
         context.setResult([context.left, context.right]).exit();
         return;
     }
-    const diff = diffMatchPatch.diff_main;
-    context.setResult([diff(context.left, context.right), 0, TEXT_DIFF]).exit();
+    const diffs = diffMatchPatch.diff_main(context.left, context.right);
+    diffMatchPatch.diff_cleanupSemantic(diffs);
+    const patches = diffMatchPatch.patch_make(context.left, context.right, diffs);
+    const diffText = diffMatchPatch.patch_toText(patches);
+    context.setResult([diffText, 0, TEXT_DIFF]).exit();
 };
 diffFilter.filterName = "texts";
 
@@ -40,13 +43,39 @@ export const patchFilter = function textsPatchFilter(context: PatchContext) {
     }
 
     // text-diff, use a text-patch algorithm
-    const patch = diffMatchPatch.patch_apply;
-    context.setResult(patch(context.deltaItem(0), context.left)[0]).exit();
+    const patches = diffMatchPatch.patch_fromText(context.deltaItem(0));
+    context.setResult(diffMatchPatch.patch_apply(patches, context.left)[0]).exit();
 };
 patchFilter.filterName = "texts";
 
-const textDeltaReverse = function(delta: Diff[]): Diff[] {
-    return delta.map(([op, text]: Diff) => [-op, text]);
+const textDeltaReverse = function(delta: string): string {
+    const patches = diffMatchPatch.patch_fromText(delta);
+    const reversedPatches = patches.map((patch: PatchOperation): PatchOperation => {
+        const invertedDiffs = patch.diffs.map(([op, s]: Diff): Diff => [-op, s]);
+        invertedDiffs.forEach(([op]: Diff, i: number, arr) => {
+            if (i > 0 && op == -1 && arr[i-1][0] == 1){
+                const swap = arr[i]; 
+                arr[i] = arr[i-1]; arr[i-1] = swap;
+            }
+        });
+        const result = new PatchOperation();
+        result.diffs = invertedDiffs;
+        result.start1 = patch.start2;
+        result.start2 = patch.start1;
+        result.length1 = patch.length2;
+        result.length2 = patch.length1;
+        return result;
+    });
+    // console.log(Object.keys(patches[0]).reduce((acc, k: string)=>{
+    //     if (k == "diffs")
+    //         acc[k] = [patches[0], reversedPatches[0]].map((c) => c[k].map((v)=>`${v[0]}*${v[1]}`).join("; "));
+    //     else
+    //         acc[k] = [patches[0], reversedPatches[0]].map((c) => (c as any)[k]);
+    //     return acc;
+    // }, {} as any));
+    const res = diffMatchPatch.patch_toText(reversedPatches);
+    // console.log("=======", delta, "---------", res, "^^^^^^^^");
+    return res;
 };
 
 export const reverseFilter = function textsReverseFilter(context: ReverseContext) {

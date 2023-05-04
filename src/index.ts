@@ -1,4 +1,6 @@
 import dateReviver from "./date-reviver";
+import * as lcs from "./filters/lcs";
 
 export {DiffPatcher} from "./diffpatcher";
-export {dateReviver};
+export {clone} from "./clone";
+export {dateReviver, lcs};

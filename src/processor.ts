@@ -66,7 +66,7 @@ class Processor {
         let lastPipe;
         let lastContext;
         while (nextPipe) {
-            if (typeof context.nextAfterChildren !== "undefined") {
+            if (context.nextAfterChildren !== undefined) {
                 // children processed and coming back to parent
                 context.next = context.nextAfterChildren;
                 context.nextAfterChildren = null;

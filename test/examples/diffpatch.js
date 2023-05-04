@@ -1,5 +1,5 @@
-const examples = {};
 
+const examples = {};
 const exampleDate = () => new Date(2020, 10, 30, 15, 10, 3);
 
 /* jshint camelcase: false */
@@ -1381,4 +1381,4 @@ examples.arrays = [
     0,
 ];
 
-export default examples;
+module.exports = examples;
