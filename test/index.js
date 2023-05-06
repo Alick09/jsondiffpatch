@@ -86,6 +86,7 @@ describe("DiffPatcher", () => {
                         });
                         return;
                     }
+                    
                     it("can diff", function() {
                         const delta = this.instance.diff(example.left, example.right);
                         expect(delta).to.deep.equal(example.delta);
@@ -220,7 +221,7 @@ describe("DiffPatcher", () => {
                 function numericDiffFilter(context) {
                     if (
                         typeof context.left === "number" &&
-            typeof context.right === "number"
+                        typeof context.right === "number"
                     ) {
                         // store number delta, eg. useful for distributed counters
                         context
@@ -376,20 +377,20 @@ describe("lcs", () => {
             });
     });
 
-    // it("should compute diff for large array", () => {
-    //     const ARRAY_LENGTH = 5000; // js stack is about 50k
-    //     function randomArray() {
-    //         const result = [];
-    //         for (let i = 0; i < ARRAY_LENGTH; i++) {
-    //             if (Math.random() > 0.5) {
-    //                 result.push("A");
-    //             } else {
-    //                 result.push("B");
-    //             }
-    //         }
-    //         return result;
-    //     }
+    it("should compute diff for large array", () => {
+        const ARRAY_LENGTH = 3000; // js stack is about 50k
+        function randomArray() {
+            const result = [];
+            for (let i = 0; i < ARRAY_LENGTH; i++) {
+                if (Math.random() > 0.5) {
+                    result.push("A");
+                } else {
+                    result.push("B");
+                }
+            }
+            return result;
+        }
 
-    //     lcs.get(randomArray(), randomArray());
-    // });
+        lcs.get(randomArray(), randomArray());
+    });
 });
