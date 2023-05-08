@@ -3,7 +3,7 @@ import Pipe from "./pipe";
 
 
 export interface iProcessorOptions {
-    objectHash?: (obj: object) => string | number;
+    objectHash?: (obj: object, index?: number) => string | number;
     arrays?: {
         // default true, detect items moved inside the array (otherwise they will be registered as remove+add)
         detectMove?: boolean;
